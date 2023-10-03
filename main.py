@@ -7,6 +7,7 @@ import time
 path_data = './data/'
 
 
+# 사진 파일 읽기
 def _0101():
     image_file = path_data + 'lena.jpg'
     img = cv2.imread(image_file)  # cv2.IMREAD_COLOR
@@ -18,6 +19,7 @@ def _0101():
     cv2.destroyAllWindows()
 
 
+# 사진 파일 쓰기
 def _0102():
     image_file = path_data + 'lena.jpg'
     img = cv2.imread(image_file)  # cv2.imread(image_file, cv2.IMREAD_COLOR)
@@ -27,6 +29,7 @@ def _0102():
     cv2.imwrite(path_data + 'lena2.jpg', img, [cv2.IMWRITE_JPEG_QUALITY, 90])
 
 
+# pyplot으로 사진 읽기
 def _0103():
     image_file = path_data + 'lena.jpg'
     img_bgr = cv2.imread(image_file)  # cv2.IMREAD_COLOR
@@ -39,6 +42,9 @@ def _0103():
     plt.show()
 
 
+# 사진 4개 서브플롯으로 띄우기
+# OpenCV는 BGR 체계를,
+# pyplot은 RGB 체계를 사용해서 변환 필요
 def _0104():
     img_bgr1 = cv2.imread(path_data + 'lena.jpg')
     img_bgr2 = cv2.imread(path_data + 'apple.jpg')
@@ -71,6 +77,8 @@ def _0104():
     plt.show()
 
 
+# 비디오 캡쳐
+# 캠이나 로컬 영상 파일을 캡쳐
 def _0105():
     cap = cv2.VideoCapture(0)  # 0번 카메라
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 320)
@@ -127,6 +135,7 @@ def _0106():
     print(cnt)
 
 
+# 이미지에 사각형과 선분 그리기
 def _0201():
     # White 배경 생성
     img = np.zeros(shape=(512, 512, 3), dtype=np.uint8) + 255
@@ -145,6 +154,7 @@ def _0201():
     cv2.destroyAllWindows()
 
 
+# 사각형을 관통하는 선분의 출발점과 도착점 추출
 def _0202():
     img = np.zeros(shape=(512, 512, 3), dtype=np.uint8) + 255
 
@@ -192,6 +202,7 @@ def _0202_ex():
     cv2.destroyAllWindows()
 
 
+# 타원 그리기
 def _0203():
     img = np.zeros(shape=(512, 512, 3), dtype=np.uint8) + 255
     pt_center = img.shape[0] // 2, img.shape[1] // 2
@@ -211,6 +222,7 @@ def _0203():
     cv2.destroyAllWindows()
 
 
+# 임의의 포인트를 이어서 다각형 만들기
 def _0204():
     img = np.zeros(shape=(512, 512, 3), dtype=np.uint8) + 255
 
@@ -224,6 +236,7 @@ def _0204():
     cv2.destroyAllWindows()
 
 
+# 타원에서 포인트를 추출하여 타원과 유사한 다각형 만들기
 def _0205():
     img = np.zeros(shape=(512, 512, 3), dtype=np.uint8) + 255
 
@@ -243,6 +256,7 @@ def _0205():
     cv2.destroyAllWindows()
 
 
+# 텍스트 띄우기
 def _0206():
     img = np.zeros(shape=(512, 512, 3), dtype=np.uint8) + 255
     text = 'OpenCV Programming'
@@ -261,6 +275,7 @@ def _0206():
     cv2.destroyAllWindows()
 
 
+# 키보드 입력
 def _0207():
     width, height = 512, 512
     x, y, radius = 256, 256, 50
@@ -360,6 +375,7 @@ def _0207_ex():
     cv2.destroyAllWindows()
 
 
+# 마우스 입력
 def _0208():
     def on_mouse(event, x, y, flags, param):
         #    global img
@@ -386,6 +402,7 @@ def _0208():
     cv2.destroyAllWindows()
 
 
+# 트랙바 컨트롤
 def _0209():
     img = np.zeros((512, 512, 3), np.uint8)
     cv2.imshow('img', img)
@@ -411,6 +428,7 @@ def _0209():
     cv2.destroyAllWindows()
 
 
+# 이미지 정보 추출
 def _0210():
     img = cv2.imread(path_data + 'lena.jpg')  # cv2.IMREAD_COLOR
     # img = cv2.imread('./data/lena.jpg', cv2.IMREAD_GRAYSCALE)
@@ -427,6 +445,7 @@ def _0210():
     print('img.dtype=', img.dtype)
 
 
+# 넘파이 배열 차원 변환
 def _0211():
     img = cv2.imread(path_data + 'lena.jpg', cv2.IMREAD_GRAYSCALE)
     print('img.shape=', img.shape)
@@ -443,6 +462,7 @@ def _0211():
     cv2.destroyAllWindows()
 
 
+# 트랙바와 마우스 입력을 받아 그림판 표현
 def _0211_ex():
     img = cv2.imread(path_data + 'lena.jpg')
     title = 'lena'
@@ -485,6 +505,7 @@ def _0211_ex():
     cv2.destroyAllWindows()
 
 
+# ROI 접근하여 영역 수정
 def _0212():
     img = cv2.imread(path_data + 'lena.jpg', cv2.IMREAD_GRAYSCALE)
     img[100, 200] = 0  # 화소값(밝기,그레이스케일) 변경
@@ -501,6 +522,7 @@ def _0212():
     cv2.destroyAllWindows()
 
 
+# 컬러 이미지 ROI 접근
 def _0213():
     img = cv2.imread(path_data + 'lena.jpg')  # cv2.IMREAD_COLOR
     img[100, 200] = [255, 0, 0]  # 컬러(BGR) 변경
@@ -517,6 +539,7 @@ def _0213():
     cv2.destroyAllWindows()
 
 
+# 컬러 이미지 채널별 접근
 def _0214():
     img = cv2.imread(path_data + 'lena.jpg')  # cv2.IMREAD_COLOR
 
@@ -533,6 +556,7 @@ def _0214():
     cv2.destroyAllWindows()
 
 
+# ROI를 위한 인덱싱 연습
 def _0214_ex():
     img = cv2.imread(path_data + 'lena.jpg')  # cv2.IMREAD_COLOR
 
@@ -547,6 +571,7 @@ def _0214_ex():
     cv2.destroyAllWindows()
 
 
+# add 메서드로 밝기 조절
 def _0301():
     src1 = cv2.imread(path_data + 'lena.jpg', cv2.IMREAD_GRAYSCALE)
     src2 = np.zeros(shape=(512, 512), dtype=np.uint8) + 100
@@ -576,6 +601,7 @@ def _0301_ex():
     cv2.destroyAllWindows()
 
 
+# 비트 연산으로 이미지 마스킹
 def _0302():
     img_file1 = path_data + 'lena.jpg'
     img_file2 = path_data + 'orange.jpg'
@@ -595,6 +621,9 @@ def _0302():
     cv2.destroyAllWindows()
 
 
+# 히스토그램 정규화
+# 특정 부분에 몰린 값을 골고루 분포하게 만듬
+# 형태 유지, 빽빽하게
 def _0303():
     src = cv2.imread(path_data + 'lena.jpg', cv2.IMREAD_GRAYSCALE)
 
@@ -610,6 +639,7 @@ def _0303():
     cv2.destroyAllWindows()
 
 
+# 임계값 컨트롤
 def _0304():
     src = cv2.imread(path_data + 'lena.jpg', cv2.IMREAD_GRAYSCALE)
     cv2.imshow('src', src)
@@ -647,6 +677,8 @@ def _0305():
     cv2.destroyAllWindows()
 
 
+# 히스토그램 계산
+# 일정 값이 얼마나 존재하는지
 def _0306():
     src = np.array([[0, 0, 0, 0],
                     [1, 1, 3, 5],
@@ -702,6 +734,7 @@ def _0307():
     plt.show()
 
 
+# 컬러 이미지 채널별 히스토그램 계산
 def _0308():
     src = cv2.imread(path_data + 'lena.jpg')
     hist_color = ('b', 'g', 'r')
@@ -712,6 +745,7 @@ def _0308():
     plt.show()
 
 
+# 그레이스케일 이미지 히스토그램 계산 함수 직접 만드는 연습
 def _0308_ex():
     src = cv2.imread(path_data + 'lena.jpg', cv2.IMREAD_GRAYSCALE)
 
@@ -740,6 +774,8 @@ def _0308_ex():
     plt.show()
 
 
+# 히스토그램 평활화
+# 어둡거나 밝은 영상을 선명하게 해줌
 def _0309():
     src = np.array([[0, 0, 0, 0],
                     [1, 1, 3, 5],
@@ -782,6 +818,8 @@ def _0310_ex():
     cv2.imwrite(path_data + 'result.jpg', dst)
 
 
+# 히스토그램 역투영
+# 비슷한 색 기준으로 영역 분할
 def _0311():
     src = np.array([[0, 0, 0, 0],
                     [1, 1, 3, 5],
@@ -797,6 +835,8 @@ def _0311():
     print('backP = ', back_p)
 
 
+# selectROI로 관심 영역 마우스 드래그로 선택
+# 선택된 ROI와 유사한 색상 강조
 def _0312():
     # 1
     src = cv2.imread(path_data + 'lena.jpg')
@@ -822,6 +862,7 @@ def _0312():
     cv2.destroyAllWindows()
 
 
+# 히스토그램 유사도 비교
 def _0313():
     # 1
     n_points = 100000
@@ -901,6 +942,7 @@ def _0314():
     plt.show()
 
 
+# src 사진과 가장 유사한 사진을 찾는 연습
 def _0314_ex():
     cmp_image_names = ['cmp2.jpg', 'cmp1.jpg', 'cmp3.jpg', 'cmp4.jpg']
 
