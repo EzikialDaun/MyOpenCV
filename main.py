@@ -963,12 +963,22 @@ def _0314_ex():
 
     cmp_result = []
 
-    for hist in cmp_gray_hists:
+    for i, hist in enumerate(cmp_gray_hists):
         cmp_result.append(cv2.compareHist(src_gray_hist, hist, cv2.HISTCMP_BHATTACHARYYA))
+        print(f'{cmp_image_names[i]} - {int((1 - cmp_result[i]) * 100)}% 일치')
 
     similar_image = cmp_image_names[cmp_result.index(min(cmp_result))]
 
     print(f'similar image is {similar_image}')
+
+    cv2.imshow('src', src_gray)
+    for i, name in enumerate(cmp_image_names):
+        if name == similar_image:
+            cv2.imshow('similar image - ' + name, cmp_gray_images[i])
+        else:
+            cv2.imshow(name, cmp_gray_images[i])
+    cv2.waitKey()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
