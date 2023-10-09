@@ -971,12 +971,12 @@ def _0314_ex():
 
     print(f'similar image is {similar_image}')
 
-    cv2.imshow('src', src_gray)
+    cv2.imshow('src', cv2.imread(path_data + 'cmp_org.jpg'))
     for i, name in enumerate(cmp_image_names):
         if name == similar_image:
-            cv2.imshow('similar image - ' + name, cmp_gray_images[i])
+            cv2.imshow('similar image - ' + name, cv2.imread(path_data + name))
         else:
-            cv2.imshow(name, cmp_gray_images[i])
+            cv2.imshow(name, cv2.imread(path_data + name))
     cv2.waitKey()
     cv2.destroyAllWindows()
 
