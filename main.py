@@ -981,5 +981,54 @@ def _0314_ex():
     cv2.destroyAllWindows()
 
 
+# 중간고사
+def mid_term():
+    # 비디오 캡처
+    cap = cv2.VideoCapture(path_data + 'mid_term_video.mp4')
+
+    # 2차원 배열
+    pos_array = np.array([]).reshape(0, 2)
+
+    while True:
+        # 프레임 캡처
+        retval, frame = cap.read()
+        if not retval:
+            break
+
+        hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+        lower = (0, 40, 0)
+        upper = (20, 180, 255)
+        b_image = cv2.inRange(hsv, lower, upper)
+
+        mode = cv2.RETR_EXTERNAL
+        method = cv2.CHAIN_APPROX_SIMPLE
+        contours, hierarchy = cv2.findContours(b_image, mode, method)
+
+        max_length = 0
+        k = 0
+        for i, cnt in enumerate(contours):
+            perimeter = cv2.arcLength(cnt, closed=True)
+            if perimeter > max_length:
+                max_length = perimeter
+                k = i
+
+        x, y, w, h = cv2.boundingRect(contours[k])
+        pos_array = np.append(pos_array, np.array([(int(x + w / 2), int(y + h / 2))]), axis=0)
+        cv2.polylines(frame, np.int32([pos_array]), isClosed=False, color=(255, 0, 0))
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+        cv2.imshow('frame', frame)
+
+        key = cv2.waitKey(24)
+        if key == 27:  # Esc
+            break
+
+    if cap.isOpened():
+        cap.release()
+
+    cv2.destroyAllWindows()
+
+
 if __name__ == "__main__":
-    _0314_ex()
+    mid_term()
