@@ -1030,5 +1030,67 @@ def mid_term():
     cv2.destroyAllWindows()
 
 
+def final_exam():
+    # 동영상 캡쳐
+    capture = cv2.VideoCapture(path_data + "final_term_video.mp4")
+    # 영상의 크기
+    height, width = (int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT)), int(capture.get(cv2.CAP_PROP_FRAME_WIDTH)))
+    # 누적된 화소를 저장
+    acc_bgr = np.zeros(shape=(height, width, 3), dtype=np.float32)
+    # 누적된 영상을 나누기 위한 해당 샷의 프레임 수
+    frame_shot = 0
+    # 샷 변경을 검출하기 위해 저장하는 이전 프레임의 히스토그램
+    prev_hist = None
+    # 샷 변경을 검출하기 위해 비교하는 기준값 alpha
+    alpha = 120000
+    # 이미지 이름에 적힐 샷 번호
+    shot_num = 1
+    # 8비트 경우의 수
+    max_8bit = 256
+    # 텍스트 디스플레이 카운트
+    disp_cnt = 0
+
+    first_ret, first_frame = capture.read()
+    if first_ret:
+        prev_hist = cv2.calcHist([first_frame], [0], None, [max_8bit], [0, max_8bit])
+
+    while True:
+        ret, frame = capture.read()
+        if not ret:
+            break
+
+        frame_shot += 1
+        # 화소 누적
+        cv2.accumulate(frame, acc_bgr)
+        avg_bgr = acc_bgr / frame_shot
+        dst_bgr = cv2.convertScaleAbs(avg_bgr)
+
+        curr_hist = cv2.calcHist([frame], [0], None, [max_8bit], [0, max_8bit])
+
+        diff = cv2.compareHist(curr_hist, prev_hist, cv2.HISTCMP_CHISQR)
+        if diff >= alpha:
+            print("Shot Changed")
+            cv2.imwrite("shot_" + str(shot_num) + ".png", dst_bgr)
+            shot_num += 1
+            frame_shot = 0
+            acc_bgr = np.zeros(shape=(height, width, 3), dtype=np.float32)
+            disp_cnt = 50
+
+        if disp_cnt > 0:
+            cv2.putText(frame, "Shot Changed", (width - 200, 50), cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 255), 2)
+
+        prev_hist = curr_hist
+        disp_cnt -= 1
+        cv2.imshow("VideoFrame", frame)
+        # key = cv2.waitKey(int(1000 / capture.get(cv2.CAP_PROP_FPS)))
+        key = cv2.waitKey(10)
+        if key == 27:  # ESC
+            break
+    if capture.isOpened():
+        # 사용한 자원 해제
+        capture.release()
+    cv2.destroyAllWindows()
+
+
 if __name__ == "__main__":
-    mid_term()
+    final_exam()
