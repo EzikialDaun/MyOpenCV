@@ -54,4 +54,4 @@ def cmp_detect(img_name):
 
 
 if __name__ == "__main__":
-    cmp_detect(path_data + '001.png')
+    cmp_detect(path_data + 'dd.jpg')

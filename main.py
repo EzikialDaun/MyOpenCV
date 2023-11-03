@@ -982,7 +982,7 @@ def _0314_ex():
 
 
 # 중간고사
-def mid_term():
+def mid_exam():
     # 비디오 캡처
     cap = cv2.VideoCapture(path_data + 'mid_term_video.mp4')
 
@@ -1069,8 +1069,8 @@ def final_exam():
 
         diff = cv2.compareHist(curr_hist, prev_hist, cv2.HISTCMP_CHISQR)
         if diff >= alpha:
-            print("Shot Changed")
-            cv2.imwrite("shot_" + str(shot_num) + ".png", dst_bgr)
+            print("Shot Changed #" + str(shot_num))
+            cv2.imwrite("./shots/shot_" + str(shot_num) + ".png", dst_bgr)
             shot_num += 1
             frame_shot = 0
             acc_bgr = np.zeros(shape=(height, width, 3), dtype=np.float32)
@@ -1093,4 +1093,5 @@ def final_exam():
 
 
 if __name__ == "__main__":
-    final_exam()
+    mid_exam()
+    # final_exam()
