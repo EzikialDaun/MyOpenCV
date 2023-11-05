@@ -1041,7 +1041,9 @@ def final_exam():
     frame_shot = 0
     # 샷 변경을 검출하기 위해 저장하는 이전 프레임의 히스토그램
     prev_hist = None
-    # 샷 변경을 검출하기 위해 비교하는 기준값 alpha
+    # 이전 프레임
+    prev_frame = None
+    # 샷 변경을 검출하기 위해 비교하는 임의의 기준값 alpha
     alpha = 120000
     # 이미지 이름에 적힐 샷 번호
     shot_num = 1
@@ -1049,43 +1051,110 @@ def final_exam():
     max_8bit = 256
     # 텍스트 디스플레이 카운트
     disp_cnt = 0
+    # fps
+    fps = int(1000 / capture.get(cv2.CAP_PROP_FPS))
 
+    # 최초 프레임
     first_ret, first_frame = capture.read()
     if first_ret:
         prev_hist = cv2.calcHist([first_frame], [0], None, [max_8bit], [0, max_8bit])
+        prev_frame = first_frame
 
     while True:
         ret, frame = capture.read()
         if not ret:
             break
-
+        # 디스플레이 프레임
+        disp = frame.copy()
+        # 전처리
         frame_shot += 1
         # 화소 누적
         cv2.accumulate(frame, acc_bgr)
+        # 화소의 평균
         avg_bgr = acc_bgr / frame_shot
         dst_bgr = cv2.convertScaleAbs(avg_bgr)
-
+        # 현재 프레임의 히스토그램 계산
         curr_hist = cv2.calcHist([frame], [0], None, [max_8bit], [0, max_8bit])
 
+        # 샷 체인지 검출
         diff = cv2.compareHist(curr_hist, prev_hist, cv2.HISTCMP_CHISQR)
+        # 이전 프레임과 현재 프레임의 히스토그램 분포의 차이가 알파보다 크면 샷이 바뀐 것으로 인식
         if diff >= alpha:
             print("Shot Changed #" + str(shot_num))
             cv2.imwrite("./shots/shot_" + str(shot_num) + ".png", dst_bgr)
             shot_num += 1
             frame_shot = 0
+            # 누적 초기화
             acc_bgr = np.zeros(shape=(height, width, 3), dtype=np.float32)
+            # 50 프레임 만큼 shot change 텍스트 표시
             disp_cnt = 50
+        else:
+            # 샷 체인지 상태가 아닌 평소의 상태이면, 이전 프레임과 현재 프레임을 흑백으로 변환
+            preg_gray = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
+            curr_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            # 방향 검출을 위한 추적 대상 점 추출
+            prev_pts = cv2.goodFeaturesToTrack(curr_gray, maxCorners=50, qualityLevel=0.01, minDistance=10,
+                                               blockSize=5)
+            # 루카스 - 카나데 알고리즘으로 특징점 변화 추출
+            curr_pts, status, err = cv2.calcOpticalFlowPyrLK(preg_gray, curr_gray, prev_pts, None)
 
+            # 누적 변화량
+            sum_x, sum_y = 0, 0
+
+            # pt1과 pt2를 화면에 표시
+            for i in range(curr_pts.shape[0]):
+                # status = 0인 것은 제외, 잘못 찾은 것을 의미
+                if status[i, 0] == 0:
+                    continue
+
+                # 이전 특징점과 현재 특징점 추출
+                p_x, p_y = tuple(prev_pts[i, 0])
+                c_x, c_y = tuple(curr_pts[i, 0])
+
+                # x, y 변화량
+                x_change, y_change = int(c_x - p_x), int(c_y - p_y)
+
+                # 이전 특징점과 현재 특징점 표시
+                # cv2.circle(disp, int_p_pt, 2, (0, 255, 255), 1, cv2.LINE_AA)
+                # cv2.circle(disp, int_c_pt, 2, (0, 0, 255), 1, cv2.LINE_AA)
+
+                # 이전 특징점과 현재 특징점을 이어주는 선 그리기
+                cv2.arrowedLine(disp, (int(p_x), int(p_y)), (int(c_x), int(c_y)), (0, 255, 0), 2)
+
+                # 변화량 누적
+                sum_x += x_change
+                sum_y += y_change
+
+            # 방향 표시기의 좌표
+            start = 25
+            max_range = start - 5
+            min_range = -1 * max_range
+            # 방향 표시기의 임계점 지정
+            if sum_x >= max_range:
+                sum_x = max_range
+            elif sum_x <= min_range:
+                sum_x = min_range
+            if sum_y >= max_range:
+                sum_y = max_range
+            elif sum_y <= min_range:
+                sum_y = min_range
+            cv2.arrowedLine(disp, (start, start), (start + sum_x, start + sum_y), (0, 255, 0), 2)
+
+        # 샷 체인지 디스플레이
         if disp_cnt > 0:
-            cv2.putText(frame, "Shot Changed", (width - 200, 50), cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 255), 2)
+            cv2.putText(disp, "Shot Changed", (width - 200, 50), cv2.FONT_HERSHEY_PLAIN, 1.5, (0, 0, 255), 2)
 
+        # 후처리
         prev_hist = curr_hist
+        prev_frame = frame
         disp_cnt -= 1
-        cv2.imshow("VideoFrame", frame)
-        # key = cv2.waitKey(int(1000 / capture.get(cv2.CAP_PROP_FPS)))
-        key = cv2.waitKey(10)
+        cv2.imshow("VideoFrame", disp)
+        key = cv2.waitKey(fps)
+        # key = cv2.waitKey(10)
         if key == 27:  # ESC
             break
+
+    # 종료
     if capture.isOpened():
         # 사용한 자원 해제
         capture.release()
@@ -1093,5 +1162,5 @@ def final_exam():
 
 
 if __name__ == "__main__":
-    mid_exam()
-    # final_exam()
+    # mid_exam()
+    final_exam()
