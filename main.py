@@ -986,7 +986,7 @@ def mid_exam():
     # 비디오 캡처
     cap = cv2.VideoCapture(path_data + 'mid_term_video.mp4')
 
-    # 2차원 배열
+    # 중간점 저장을 위한 2차원 배열
     pos_array = np.array([]).reshape(0, 2)
 
     while True:
@@ -997,26 +997,34 @@ def mid_exam():
 
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
+        # 색상 영역 지정
         lower = (0, 40, 0)
         upper = (20, 180, 255)
         b_image = cv2.inRange(hsv, lower, upper)
 
         mode = cv2.RETR_EXTERNAL
         method = cv2.CHAIN_APPROX_SIMPLE
+        # 컨추어 찾기
         contours, hierarchy = cv2.findContours(b_image, mode, method)
 
         max_length = 0
         k = 0
+        # 둘레가 가장 큰 컨추어 찾기
         for i, cnt in enumerate(contours):
             perimeter = cv2.arcLength(cnt, closed=True)
             if perimeter > max_length:
                 max_length = perimeter
                 k = i
 
+        # 바운딩 박스 그리기
         x, y, w, h = cv2.boundingRect(contours[k])
-        pos_array = np.append(pos_array, np.array([(int(x + w / 2), int(y + h / 2))]), axis=0)
-        cv2.polylines(frame, np.int32([pos_array]), isClosed=False, color=(255, 0, 0))
+        # 바운딩 박스 표시
         cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
+        # 중앙점의 배열에 현재 중앙점 append
+        pos_array = np.append(pos_array, np.array([(int(x + w / 2), int(y + h / 2))]), axis=0)
+        # 중앙점을 연결하여 경로 구성
+        cv2.polylines(frame, np.int32([pos_array]), isClosed=False, color=(255, 0, 0))
 
         cv2.imshow('frame', frame)
 
@@ -1030,6 +1038,7 @@ def mid_exam():
     cv2.destroyAllWindows()
 
 
+# 기말고사
 def final_exam():
     # 동영상 캡쳐
     capture = cv2.VideoCapture(path_data + "final_term_video.mp4")
@@ -1081,8 +1090,10 @@ def final_exam():
         # 이전 프레임과 현재 프레임의 히스토그램 분포의 차이가 알파보다 크면 샷이 바뀐 것으로 인식
         if diff >= alpha:
             print("Shot Changed #" + str(shot_num))
-            cv2.imwrite("./shots/shot_" + str(shot_num) + ".png", dst_bgr)
+            cv2.imwrite(f"./shots/shot_{str(shot_num)}.png", dst_bgr)
+            # 이미지 이름을 붙이기 위한 샷 넘버 증가
             shot_num += 1
+            # 누적을 평균내기 위해 나누는 수 초기화
             frame_shot = 0
             # 누적 초기화
             acc_bgr = np.zeros(shape=(height, width, 3), dtype=np.float32)
@@ -1095,9 +1106,8 @@ def final_exam():
             # 방향 검출을 위한 추적 대상 점 추출
             prev_pts = cv2.goodFeaturesToTrack(curr_gray, maxCorners=50, qualityLevel=0.01, minDistance=10,
                                                blockSize=5)
-            # 루카스 - 카나데 알고리즘으로 특징점 변화 추출
+            # 루카스 - 카나데 알고리즘으로 특징점 변화 추적
             curr_pts, status, err = cv2.calcOpticalFlowPyrLK(preg_gray, curr_gray, prev_pts, None)
-
             # 누적 변화량
             sum_x, sum_y = 0, 0
 
@@ -1119,7 +1129,7 @@ def final_exam():
                 # cv2.circle(disp, int_c_pt, 2, (0, 0, 255), 1, cv2.LINE_AA)
 
                 # 이전 특징점과 현재 특징점을 이어주는 선 그리기
-                cv2.arrowedLine(disp, (int(p_x), int(p_y)), (int(c_x), int(c_y)), (0, 255, 0), 2)
+                # cv2.arrowedLine(disp, (int(p_x), int(p_y)), (int(c_x), int(c_y)), (0, 255, 0), 2)
 
                 # 변화량 누적
                 sum_x += x_change
@@ -1162,5 +1172,5 @@ def final_exam():
 
 
 if __name__ == "__main__":
-    # mid_exam()
-    final_exam()
+    mid_exam()
+    # final_exam()

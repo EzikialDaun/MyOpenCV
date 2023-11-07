@@ -7,8 +7,8 @@ path_data = './data/'
 def cmp_detect(img_name):
     # 공통점 - 나이: 하, 인종: 중상
     # opencv - 성별: 중, 인식 민감도: 하, 감정: 하, 속도: 빠름
-    # ssd - 성별: 상, 인식 민감도: 하, 감정: 중, 속도: 빠름
-    # mtcnn - 성별: 중, 인식 민감도: 상, 감정: 중, 속도: 느림
+    # ssd(Single Shot Detector) - 성별: 상, 인식 민감도: 하, 감정: 중, 속도: 빠름
+    # mtcnn(Multi-Task Convolutional Neural Networks) - 성별: 중, 인식 민감도: 상, 감정: 중, 속도: 느림
     # retinaface - 성별: 하, 인식 민감도: 중상, 감정: 중상, 속도: 느림
     backends = [
         'opencv',
@@ -33,7 +33,10 @@ def cmp_detect(img_name):
                 cv2.rectangle(img, (point_x, point_y), (point_x + width, point_y + height), (0, 0, 255), 2)
 
                 font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(img, str(i + 1), (point_x + 3, point_y + 15), font, 0.5, (0, 0, 255), 1)
+                dominant_emotion = obj['dominant_emotion']
+                dominant_emotion_percent = round(obj['emotion'][dominant_emotion])
+                cv2.putText(img, f"{str(i + 1)} - {dominant_emotion} - {dominant_emotion_percent}%",
+                            (point_x + 3, point_y + 15), font, 0.3, (0, 0, 255), 1)
 
                 print(f"detector - {backend}")
                 print(f"index - {str(i + 1)}")
@@ -41,10 +44,11 @@ def cmp_detect(img_name):
                 print(f"age - {obj['age']}")
                 print(f"gender - {obj['dominant_gender']} - {obj['gender']}")
                 print(f"race - {obj['dominant_race']} - {obj['race']}")
-                print(f"emotion - {obj['dominant_emotion']} - {obj['emotion']}")
+                print(f"emotion - {dominant_emotion} - {obj['emotion']}")
                 print()
 
             cv2.imshow(backend, img)
+            cv2.imwrite(f"./emotion_shots/{backend}.png", img)
         except Exception as e:
             print(f"detector - {backend}")
             print(e)
@@ -54,4 +58,4 @@ def cmp_detect(img_name):
 
 
 if __name__ == "__main__":
-    cmp_detect(path_data + 'dd.jpg')
+    cmp_detect(path_data + '003.png')
