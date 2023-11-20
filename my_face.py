@@ -100,7 +100,7 @@ def identify_character(profiles, img_name):
     path_array = img_name.split("/")
     dot_array = path_array[-1].split(".")
     origin_file_name = dot_array[0]
-    cv2.imwrite(f"./emotion_shots/{origin_file_name}_{backend}.png", img)
+    cv2.imwrite(f"./emotion_shots/{origin_file_name}_retina.png", img)
     # 프로그램 종료 방지, 아무 키 누르면 프로그램 종료
     # cv2.waitKey()
     # 모든 창 소멸
