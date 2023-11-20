@@ -1172,5 +1172,5 @@ def final_exam():
 
 
 if __name__ == "__main__":
-    mid_exam()
-    # final_exam()
+    # mid_exam()
+    final_exam()
