@@ -140,60 +140,6 @@ class Character:
         self.list_emotion = []
 
 
-def get_shots(path_input, alpha, limit=-1, interval=-1):
-    capture = cv2.VideoCapture(path_input)
-    prev_hist = None
-    cnt_global = 0
-    cnt_shot = 0
-    interval_frame = 0
-    # 샷 변경을 검출하기 위해 비교하는 임의의 기준값 alpha
-    if interval == -1:
-        interval_frame = int(1000 / capture.get(cv2.CAP_PROP_FPS))
-    else:
-        interval_frame = interval
-    print(f'interval_frame: {interval_frame}')
-    print()
-
-    # 최초 프레임
-    first_ret, first_frame = capture.read()
-    if first_ret:
-        prev_hist = cv2.calcHist([first_frame], [0], None, [256], [0, 256])
-        cv2.imwrite(f'./shots/{cnt_shot}.png', first_frame)
-        print(f'./shots/{cnt_shot}.png')
-        print()
-        cnt_shot += 1
-        cnt_global += 1
-
-    while True:
-        ret, frame = capture.read()
-
-        if not ret:
-            break
-
-        if limit != -1 and cnt_shot >= limit:
-            break
-
-        if cnt_global % interval_frame == 0:
-            # 샷 체인지 검출
-            curr_hist = cv2.calcHist([frame], [0], None, [256], [0, 256])
-            diff = cv2.compareHist(curr_hist, prev_hist, cv2.HISTCMP_BHATTACHARYYA)
-            if diff >= alpha:
-                cv2.imwrite(f'./shots/{cnt_shot}.png', frame)
-                print(f'diff: {diff}')
-                print(f'./shots/{cnt_shot}.png')
-                print()
-                cnt_shot += 1
-                prev_hist = curr_hist
-
-        cnt_global += 1
-
-    # 종료
-    if capture.isOpened():
-        # 사용한 자원 해제
-        capture.release()
-    cv2.destroyAllWindows()
-
-
 if __name__ == "__main__":
     path_profile = './notting_hill/profile/'
     list_profile = [
