@@ -29,10 +29,10 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
             curr_hist = cv2.calcHist([frame], [0], None, [256], [0, 256])
             # 0: 완전 일치, 1: 완전 불일치
             diff = cv2.compareHist(curr_hist, prev_hist, cv2.HISTCMP_BHATTACHARYYA)
+            print(f'diff: {diff}')
             if diff >= alpha:
                 file_name = f'{path_output}/{cnt_shot}_{int(capture.get(cv2.CAP_PROP_POS_MSEC) / 1000)}.png'
                 cv2.imwrite(file_name, frame)
-                print(f'diff: {diff}')
                 print(file_name)
                 print()
                 cnt_shot += 1
@@ -46,5 +46,5 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
 
 
 if __name__ == "__main__":
-    get_shots('./data/Notting.Hill.1999.1080p.BluRay.x264.anoXmous_.mp4', './notting_hill/indexed_shot', 0.3, -1,
+    get_shots('./data/Notting.Hill.1999.1080p.BluRay.x264.anoXmous_.mp4', './notting_hill/indexed_shot', 0.2, -1,
               24)
