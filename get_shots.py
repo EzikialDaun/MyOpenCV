@@ -46,5 +46,5 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
 
 
 if __name__ == "__main__":
-    get_shots('./data/Notting.Hill.1999.1080p.BluRay.x264.anoXmous_.mp4', './notting_hill/indexed_shot', 0.2, -1,
-              24)
+    get_shots(path_input='./data/Roman Holiday.mp4', path_output='./roman_holiday/indexed_shot', interval=24,
+              alpha=0.17)
