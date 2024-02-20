@@ -14,6 +14,8 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
         print(f'{path_output}/{cnt_shot}_0.png')
         print()
         cnt_shot += 1
+    else:
+        return
 
     while True:
         ret, frame = capture.read()
@@ -46,5 +48,6 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
 
 
 if __name__ == "__main__":
-    get_shots(path_input='./data/Roman Holiday.mp4', path_output='./roman_holiday/indexed_shot', interval=24,
-              alpha=0.17)
+    get_shots(path_input='./data/the_man_from_nowhere.mkv', path_output='./the_man_from_nowhere/indexed_shot',
+              interval=24,
+              alpha=0.25)
