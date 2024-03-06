@@ -6,20 +6,25 @@ import cv2
 import natsort
 from deepface import DeepFace
 
+# 감정 목록
+list_emotion = [
+    'angry',
+    'disgust',
+    'fear',
+    'happy',
+    'sad',
+    'surprise',
+    'neutral'
+]
+
+EMOTION_NEU = 0
+EMOTION_POS = 1
+EMOTION_NEG = 2
+
 
 def identify_character(profiles, img_name, path_output, threshold_dist=0.86):
     method_distance = [('cosine', 0.4), ('euclidean', 0.6), ('euclidean_l2', 0.86)]
     distance_metric, threshold_max = method_distance[2]
-    # 감정 목록
-    list_emotion = [
-        'angry',
-        'disgust',
-        'fear',
-        'happy',
-        'sad',
-        'surprise',
-        'neutral'
-    ]
     # 영상에 있는 인물 파악하여 배열로 저장
     face_analyze_result = DeepFace.analyze(img_path=img_name,
                                            actions=('gender', 'emotion'),
@@ -152,6 +157,13 @@ class Emotion:
     def __init__(self, array_emotion, timestamp):
         self.array_emotion = array_emotion
         self.timestamp = timestamp
+        if array_emotion[0] + array_emotion[1] + array_emotion[2] + array_emotion[4] > 50:
+            mode_emotion = EMOTION_NEG
+        elif array_emotion[3] > 50:
+            mode_emotion = EMOTION_POS
+        else:
+            mode_emotion = EMOTION_NEU
+        self.mode_emotion = mode_emotion
 
 
 if __name__ == "__main__":
