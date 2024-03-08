@@ -101,6 +101,7 @@ def identify_character(profiles, img_name, path_output, threshold_dist=0.86):
                 f = open(name_txt_file, 'a')
             else:
                 f = open(name_txt_file, 'w')
+                f.write('name,timestamp,angry,disgust,happy,sad,surprise,neutral')
             list_fe = []
             for e in list_emotion:
                 list_fe.append(round(face_result['emotion'][e], digit))
