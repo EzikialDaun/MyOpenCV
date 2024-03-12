@@ -15,12 +15,11 @@ if __name__ == "__main__":
             if row['name'].strip() == profile.name:
                 profile.list_appearance.append(row['timestamp'])
 
-    # 규칙
+    # 액션 영화 규칙 & 클리셰
     # 1. 등장 빈도가 가장 많은 인물이 주인공이다.
-    # 2. 주인공 시점에서 감정이 긍정적이면 조력자, 아니면 반동 인물의 조력자다.
-    # 3. 반동 인물과 그 조력자는 보통 주인공과 상호작용 끝에 퇴장한다.
-    # 4. 반동 인물의 조력자가 반동 인물보다 먼저 퇴장한다.
-    # 5. 주인공의 시점에서 시작과 끝을 함께 하는 인물이 보통 조력자다.
+    # 2. 반동 인물과 그 조력자는 보통 주인공과 상호작용 끝에 퇴장한다.
+    # 3. 반동 인물의 조력자가 반동 인물보다 먼저 퇴장한다.
+    # 4. 주인공의 시점에서 시작과 끝을 함께 하는 인물이 보통 조력자다.
 
     if len(list_profile) > 0:
         # 규칙 1: 가장 빈도가 높은 주인공 선정
@@ -50,13 +49,13 @@ if __name__ == "__main__":
         list_aid_protagonist = []
         len_interaction = len(protagonist.list_interaction)
         if len_interaction > 0:
-            # 규칙 5: 주인공과 처음과 끝에 상호작용하는 사람이 조력자
+            # 규칙 4: 주인공과 처음과 끝에 상호작용하는 사람이 조력자
             name_aid_protagonist = protagonist.list_interaction[0].target
             if name_aid_protagonist == protagonist.list_interaction[-1].target:
                 list_aid_protagonist.append(protagonist.list_interaction[0])
                 print(f'{name_aid_protagonist}는(은) {protagonist.name}의 처음과 끝을 함께하는 조력자입니다.')
                 list_rest = [obj for obj in list_rest if obj.name != name_aid_protagonist]
-            # 규칙 3, 4: 주인공에 의한 퇴장 시점의 순서
+            # 규칙 2, 3: 주인공에 의한 퇴장 시점의 순서
             min_exit = 0
             antagonist = None
             for profile in list_rest:
@@ -69,4 +68,4 @@ if __name__ == "__main__":
                 print(f'{antagonist.name}는(은) {protagonist.name}에 의해 가장 나중에 퇴장한 반동 인물입니다.')
                 list_aid_antagonist = [obj for obj in list_rest if obj.name != antagonist.name]
                 for i in list_aid_antagonist:
-                    print(f'{i.name}는(은) {antagonist.name}의 조력자입니다.')
+                    print(f'{i.name}는(은) 반동 인물 {antagonist.name}의 조력자입니다.')

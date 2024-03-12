@@ -17,10 +17,6 @@ list_emotion = [
     'neutral'
 ]
 
-EMOTION_NEU = 0
-EMOTION_POS = 1
-EMOTION_NEG = 2
-
 
 class Character:
     def __init__(self, name_char, path_profiles):
