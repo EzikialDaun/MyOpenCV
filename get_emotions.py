@@ -22,6 +22,20 @@ EMOTION_POS = 1
 EMOTION_NEG = 2
 
 
+class Character:
+    def __init__(self, name_char, path_profiles):
+        self.name: str = name_char
+        self.profile: str = path_profiles
+        self.list_appearance: list[float] = []
+        self.list_interaction: list[Interaction] = []
+
+
+class Interaction:
+    def __init__(self, timestamp: float, target: str):
+        self.timestamp = timestamp
+        self.target = target
+
+
 def identify_character(profiles, img_name, path_output, threshold_dist=0.86):
     method_distance = [('cosine', 0.4), ('euclidean', 0.6), ('euclidean_l2', 0.86)]
     distance_metric, threshold_max = method_distance[2]
@@ -145,26 +159,6 @@ def identify_character(profiles, img_name, path_output, threshold_dist=0.86):
     cv2.imwrite(name_emotion_file, img)
     print(f'{name_emotion_file} generated.')
     print('----------------------------------------')
-
-
-class Character:
-    def __init__(self, name_char, path_profiles):
-        self.name = name_char
-        self.profile = path_profiles
-        self.list_emotion = []
-
-
-class Emotion:
-    def __init__(self, array_emotion, timestamp):
-        self.array_emotion = array_emotion
-        self.timestamp = timestamp
-        if array_emotion[0] + array_emotion[1] + array_emotion[2] + array_emotion[4] > 50:
-            mode_emotion = EMOTION_NEG
-        elif array_emotion[3] > 50:
-            mode_emotion = EMOTION_POS
-        else:
-            mode_emotion = EMOTION_NEU
-        self.mode_emotion = mode_emotion
 
 
 if __name__ == "__main__":
