@@ -53,7 +53,7 @@ if __name__ == "__main__":
             name_aid_protagonist = protagonist.list_interaction[0].target
             if name_aid_protagonist == protagonist.list_interaction[-1].target:
                 list_aid_protagonist.append(protagonist.list_interaction[0])
-                print(f'{name_aid_protagonist}는(은) {protagonist.name}의 처음과 끝을 함께하는 조력자입니다.')
+                print(f'{name_aid_protagonist}는(은) {protagonist.name}의 시작과 끝을 함께하는 조력자입니다.')
                 list_rest = [obj for obj in list_rest if obj.name != name_aid_protagonist]
             # 규칙 2, 3: 주인공에 의한 퇴장 시점의 순서
             min_exit = 0
