@@ -159,7 +159,7 @@ def identify_character(profiles, img_name, path_output, threshold_dist=0.86):
 
 if __name__ == "__main__":
     path_main = './the_man_from_nowhere'
-    list_name = ['Cha Tae Sik 1', 'Cha Tae Sik 2', 'Jeong So Mi', 'Man Seok', 'Jong Seok', 'Lam Loan']
+    list_name = ['Cha Tae Sik', 'Jeong So Mi', 'Man Seok', 'Jong Seok', 'Lam Loan']
     list_profile = []
     for name in list_name:
         list_profile.append(Character(name, f'{path_main}/profile/{name.replace(" ", "_").lower()}'))
@@ -172,4 +172,4 @@ if __name__ == "__main__":
     list_shot = natsort.natsorted(os.listdir(path_indexed))
     for shot in list_shot:
         identify_character(list_profile, f'{path_indexed}/{shot}',
-                           path_result, threshold_dist=0.8)
+                           path_result, threshold_dist=0.86)
