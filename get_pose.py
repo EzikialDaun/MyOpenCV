@@ -19,45 +19,41 @@ list_emotion = [
 ]
 
 
-def identify_character(profiles: list[Character], img_name: str, path_output: str):
+def identify_character(model_pose, profiles: list[Character], img_name: str, path_output: str):
+    SIZE_SHD_BOX = 50
     method_distance = [('cosine', 0.4), ('euclidean', 0.6), ('euclidean_l2', 0.86)]
-    result = model.predict(img_name, save=False)
+    result = model_pose.predict(img_name, save=False)
     frame = cv2.imread(img_name)
     for i in range(len(result[0].boxes)):
-        list_coord = result[0].boxes[i].xyxy[0].tolist()
-        coord_start = (int(list_coord[0]), int(list_coord[1]))
-        coord_end = (int(list_coord[2]), int(list_coord[3]))
-        shoulder_left = result[0].keypoints.xy[i][6].tolist()
-        shoulder_right = result[0].keypoints.xy[i][5].tolist()
-        coord_shoulder_left = (int(shoulder_left[0]), int(shoulder_left[1]))
-        coord_shoulder_right = (int(shoulder_right[0]), int(shoulder_right[1]))
+        xy_box = list(map(int, result[0].boxes[i].xyxy[0].tolist()))
+        x_box_start, y_box_start = xy_box[0], xy_box[1]
+        x_box_end, y_box_end = xy_box[2], xy_box[3]
+        xy_shd_left = list(map(int, result[0].keypoints.xy[i][6].tolist()))
+        xy_shd_right = list(map(int, result[0].keypoints.xy[i][5].tolist()))
+        x_shd_left, y_shd_left = xy_shd_left[0], xy_shd_left[1]
+        x_shd_right, y_shd_right = xy_shd_right[0], xy_shd_right[1]
         is_damaged_left = False
         is_damaged_right = False
-        for coord in shoulder_left:
+        for coord in xy_shd_left:
             if coord == 0:
                 is_damaged_left = True
-        for coord in shoulder_right:
+        for coord in xy_shd_right:
             if coord == 0:
                 is_damaged_right = True
-        if not is_damaged_left and not is_damaged_right:
-            size_box = 50
+        if not (is_damaged_left and is_damaged_right):
             if not is_damaged_left:
-                coord_shd_start = (
-                    coord_shoulder_left[0] - size_box // 2, coord_shoulder_left[1] - size_box // 2)
-                coord_shd_end = (
-                    coord_shoulder_left[0] + size_box // 2, coord_shoulder_left[1] + size_box // 2)
+                x_roi_start, y_roi_start = x_shd_left - SIZE_SHD_BOX // 2, y_shd_left - SIZE_SHD_BOX // 2
+                x_roi_end, y_roi_end = x_shd_left + SIZE_SHD_BOX // 2, y_shd_left + SIZE_SHD_BOX // 2
             else:
-                coord_shd_start = (
-                    coord_shoulder_right[0] - size_box // 2, coord_shoulder_right[1] - size_box // 2)
-                coord_shd_end = (
-                    coord_shoulder_right[0] + size_box // 2, coord_shoulder_right[1] + size_box // 2)
-            frame_frag = frame[coord_start[1]:coord_end[1], coord_start[0]:coord_end[0]]
+                x_roi_start, y_roi_start = x_shd_right - SIZE_SHD_BOX // 2, y_shd_right - SIZE_SHD_BOX // 2
+                x_roi_end, y_roi_end = x_shd_right + SIZE_SHD_BOX // 2, y_shd_right + SIZE_SHD_BOX // 2
+            frame_frag = frame[y_box_start:y_box_end, x_box_start:x_box_end]
             result_analyze = DeepFace.analyze(
                 img_path=frame_frag,
                 actions=('gender', 'emotion', 'age', 'race'),
                 detector_backend='retinaface', enforce_detection=False,
                 silent=True)
-            frame_shoulder = frame[coord_shd_start[1]:coord_shd_end[1], coord_shd_start[0]:coord_shd_end[0]]
+            frame_shoulder = frame[y_roi_start:y_roi_end, x_roi_start:x_roi_end]
             color_clothing = get_dominant_colors(frame_shoulder, 1)
             rgb_clothing = (color_clothing[0][0], color_clothing[0][1], color_clothing[0][2])
             if len(result_analyze) > 0:
@@ -85,4 +81,4 @@ if __name__ == "__main__":
     path_indexed = f'{path_main}/indexed_shot'
     list_shot = natsort.natsorted(os.listdir(path_indexed))
     for shot in list_shot:
-        identify_character(list_profile, f'{path_indexed}/{shot}', path_result)
+        identify_character(model, list_profile, f'{path_indexed}/{shot}', path_result)
