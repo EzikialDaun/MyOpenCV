@@ -1,9 +1,18 @@
 import cv2
+from deepface import DeepFace
 
 
-def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
+def has_face(frame) -> bool:
+    try:
+        DeepFace.analyze(img_path=frame, detector_backend="retinaface")
+        return True
+    except Exception as e:
+        print(e)
+        return False
+
+
+def get_facial_shots(path_input, path_output, alpha=0.2, step=1):
     capture = cv2.VideoCapture(path_input)
-    prev_hist = None
     cnt_shot = 0
 
     # 최초 프레임
@@ -23,22 +32,17 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
         if not ret:
             break
 
-        if limit != -1 and cnt_shot >= limit:
-            break
-
-        if capture.get(cv2.CAP_PROP_POS_FRAMES) % interval == 0:
-            # 샷 체인지 검출
+        if capture.get(cv2.CAP_PROP_POS_FRAMES) % step == 0:
             curr_hist = cv2.calcHist([frame], [0], None, [256], [0, 256])
-            # 0: 완전 일치, 1: 완전 불일치
             diff = cv2.compareHist(curr_hist, prev_hist, cv2.HISTCMP_BHATTACHARYYA)
             print(f'diff: {diff}')
             if diff >= alpha:
-                file_name = f'{path_output}/{cnt_shot}_{int(capture.get(cv2.CAP_PROP_POS_MSEC) / 1000)}.png'
-                cv2.imwrite(file_name, frame)
-                print(file_name)
-                print()
-                cnt_shot += 1
-                prev_hist = curr_hist
+                if has_face(frame):
+                    file_name = f'{path_output}/{cnt_shot}_{int(capture.get(cv2.CAP_PROP_POS_MSEC) / 1000)}.png'
+                    cv2.imwrite(file_name, frame)
+                    print(f"{file_name} saved.\n")
+                    cnt_shot += 1
+            prev_hist = curr_hist
 
     # 종료
     if capture.isOpened():
@@ -48,6 +52,5 @@ def get_shots(path_input, path_output, alpha=1.0, limit=-1, interval=1):
 
 
 if __name__ == "__main__":
-    get_shots(path_input='./data/the_man_from_nowhere.mkv', path_output='./the_man_from_nowhere/indexed_shot',
-              interval=24,
-              alpha=0.25)
+    get_facial_shots(path_input='./data/the_man_from_nowhere.mkv', path_output='./the_man_from_nowhere/indexed_shot',
+                     step=24, alpha=0.1)
