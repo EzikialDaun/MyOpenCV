@@ -54,6 +54,6 @@ def get_facial_shots(path_input, path_output, alpha=0.2, step=1):
 
 if __name__ == "__main__":
     get_facial_shots(
-        path_input='./data/Titanic (1997) [1080p] [YTS.AG]/Titanic.1997.1080p.BluRay.x264-[YTS.AG].mp4',
-        path_output='./Titanic/indexed_shot',
+        path_input='./data/The.Shawshank.Redemption.1994.1080p.BluRay.DDP.5.1.x265-EDGE2020.mkv',
+        path_output='./Shawshank Redemption/indexed_shot',
         step=24, alpha=0.2)
