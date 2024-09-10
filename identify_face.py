@@ -1,5 +1,6 @@
 import csv
 
+import cv2
 from deepface import DeepFace
 
 
@@ -16,6 +17,16 @@ def calculate_match_ratio(set1, set2):
     return match_ratio
 
 
+def equalize_hist(path: str):
+    img = cv2.imread(path)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    h, s, v = cv2.split(hsv)
+    v_equalized = cv2.equalizeHist(v)
+    dst_hsv = cv2.merge([h, s, v_equalized])
+    dst = cv2.cvtColor(dst_hsv, cv2.COLOR_HSV2BGR)
+    return dst
+
+
 def identify_face(path_label: str):
     metrics = ["cosine", "euclidean", "euclidean_l2"]
     models = [
@@ -23,18 +34,12 @@ def identify_face(path_label: str):
         "Facenet",
         "Facenet512",
         "DeepFace",
-        "DeepID",
         "ArcFace",
-        "SFace",
-        "GhostFaceNet",
     ]
     backends = [
         'opencv',
         'mtcnn',
-        'fastmtcnn',
         'retinaface',
-        'yunet',
-        'centerface',
     ]
 
     f = open(path_label, 'r')
@@ -54,9 +59,11 @@ def identify_face(path_label: str):
     cnt_frontal = 0
 
     for index, label in enumerate(list_label):
-        dfs = DeepFace.find(img_path=f"../../MyFace Dataset/probe/{label[0]}.png",
+        target = equalize_hist(f"../../MyFace Dataset/probe/{label[0]}.png")
+
+        dfs = DeepFace.find(img_path=target,
                             db_path="../../MyFace Dataset/gallery",
-                            detector_backend=backends[3], model_name=models[0], distance_metric=metrics[2],
+                            detector_backend=backends[1], model_name=models[4], distance_metric=metrics[0],
                             enforce_detection=False)
 
         list_answer = []
