@@ -31,10 +31,10 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
         'mtcnn',
         'retinaface',
     ]
-    weight_race = 0.6
-    weight_gender = 0.2
-    weight_hair = 0.7
-    weight_hat = 0.2
+    weight_race = 1
+    weight_gender = 1
+    weight_hair = 1
+    weight_hat = 1
 
     f = open(path_label, 'r')
     rdr = csv.reader(f)
@@ -139,7 +139,7 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
 
 
 if __name__ == "__main__":
-    movie = "..\\..\\lab\\MyFace Dataset Lite\\django_unchained"
+    movie = "..\\..\\lab\\MyFace Dataset Lite\\inception"
     label = f"{movie}\\label.csv"
     probe = f"{movie}\\probe"
     profiles = f"{movie}\\profile"
