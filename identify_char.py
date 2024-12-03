@@ -1,9 +1,9 @@
 import csv
-
+import os
 import cv2
+import numpy as np
 from deepface import DeepFace
-
-from MyOpenCV.get_dominate_haircolor import extract_hair_area, has_black_hair, detect_hat
+from MyOpenCV.get_dominate_haircolor import detect_hat
 
 
 def select_similar(list_target: list[list]):
@@ -16,8 +16,8 @@ def select_similar(list_target: list[list]):
     return [[key, value] for key, value in result.items()]
 
 
-def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profile):
-    distance_expand = 0.3
+def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profile, distance_expand=0.3, weight_race=1.0,
+                  weight_gender=1.0, weight_hair=1.0, weight_hat=1.0):
     metrics = ["cosine", "euclidean", "euclidean_l2"]
     models = [
         "VGG-Face",
@@ -31,10 +31,6 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
         'mtcnn',
         'retinaface',
     ]
-    weight_race = 1
-    weight_gender = 1
-    weight_hair = 1
-    weight_hat = 1
 
     f = open(path_label, 'r')
     rdr = csv.reader(f)
@@ -56,6 +52,8 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
 
     score = 0
 
+    len_matrix = len(list_profile)
+    confusion_matrix = np.zeros((len_matrix, len_matrix), dtype=int)
     for k, line in enumerate(list_label):
         target = f"{dir_probe}\\{line[0]}"
         src = cv2.imread(target)
@@ -75,30 +73,8 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
                               silent=True)
         race = analyzed[0]['dominant_race']
         gender = analyzed[0]['dominant_gender']
-        try:
-            has_hat = detect_hat(src)
-        except IndexError:
-            has_hat = None
-        if has_hat == "1":
-            is_black_hair = None
-        else:
-            try:
-                x, y, w, h = (analyzed[0]["region"][key] for key in ("x", "y", "w", "h"))
-                padding = int((w + h) / 4)
-
-                y_start = max(0, y - padding)
-                y_end = min(src.shape[0], y + int((h + padding) / 2))
-                # y_end = min(src.shape[1], y + h + padding)
-                x_start = max(0, x - padding)
-                x_end = min(src.shape[1], x + w + padding)
-
-                frag = src[y_start:y_end, x_start:x_end]
-
-                colors, seg = extract_hair_area(frag)
-
-                is_black_hair = has_black_hair(colors)
-            except IndexError:
-                is_black_hair = None
+        is_black_hair = None
+        has_hat = detect_hat(src)
 
         print(f"race : {race}")
         print(f"gender : {gender}")
@@ -107,12 +83,9 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
 
         list_distance = []
         for i in found[0].values:
-            # name: str = i[0].split('\\')[6]
-            import os
             name = os.path.basename(os.path.dirname(i[0]))
             distance: float = i[11]
             list_distance.append([name, distance])
-        # list_selected = select_similar(list_distance)
         list_selected = sorted(select_similar(list_distance), key=lambda x: x[1])
         print(list_selected)
         for i in list_selected:
@@ -130,18 +103,46 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
         sorted_data = sorted(list_selected, key=lambda x: x[1])
         print(sorted_data)
 
+        label = line[1]
         answer = sorted_data[0][0]
-        print(f"target: {target}, label: {line[1]}, answer: {answer}")
-        if answer == line[1]:
+        index_answer = -1
+        index_label = -1
+        for i, profile in enumerate(list_profile):
+            if answer == profile[0]:
+                index_answer = i
+            if label == profile[0]:
+                index_label = i
+
+        if index_answer == -1 or index_label == -1:
+            print("matrix indexing error")
+        else:
+            confusion_matrix[index_label][index_answer] += 1
+
+        print(f"target: {target}, label: {label}, answer: {answer}")
+        if answer == label:
             score += 1
         print(f"{score} / {k + 1} = {score / (k + 1)}")
+        print(confusion_matrix)
         print()
+
+    # 텍스트 파일로 저장하기
+    with open("result_identify_char.txt", "a") as file:
+        file.write(f"Target: {dir_probe}\n")
+        file.write(f"Weight For Race: {weight_race}\n")
+        file.write(f"Weight For Gender: {weight_gender}\n")
+        file.write(f"Weight For Hat: {weight_hat}\n")
+        file.write(f"Confusion_Matrix:\n{confusion_matrix}\n")
+        file.write("--------\n")  # 구분선 추가
 
 
 if __name__ == "__main__":
-    movie = "..\\..\\lab\\MyFace Dataset Lite\\inception"
-    label = f"{movie}\\label.csv"
-    probe = f"{movie}\\probe"
-    profiles = f"{movie}\\profile"
-    profile = f"{movie}\\profile.csv"
-    identify_char(profiles, probe, label, profile)
+    dir_movie = f"..\\..\\lab\\MyFace Dataset Lite\\django_unchained"
+    weights_race = [0.3]
+    weights_gender = [0.3]
+    weights_hat = [0.3]
+
+    for h in weights_hat:
+        for r in weights_race:
+            for g in weights_gender:
+                identify_char(f"{dir_movie}\\profile", f"{dir_movie}\\probe", f"{dir_movie}\\label.csv",
+                              f"{dir_movie}\\profile.csv", weight_race=r, weight_gender=g, weight_hat=h)
