@@ -54,6 +54,6 @@ def get_facial_shots(path_input, path_output, alpha=0.2, step=1):
 
 if __name__ == "__main__":
     get_facial_shots(
-        path_input='./data/Django.Unchained.2012.1080p.BluRay.x264.YIFY.mp4',
-        path_output='./Django Unchained/indexed_shot',
+        path_input='./data/The.Greatest.Showman.2017.1080p.BluRay.x264-[YTS.AM].mp4',
+        path_output='./the_greatest_showman/indexed_shot',
         step=24, alpha=0.2)

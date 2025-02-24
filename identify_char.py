@@ -3,7 +3,10 @@ import os
 import cv2
 import numpy as np
 from deepface import DeepFace
+
+from MyOpenCV.confusion_matrix import get_multiple_class_f1_score
 from MyOpenCV.get_dominate_haircolor import detect_hat
+from deepface.modules import verification
 
 
 def select_similar(list_target: list[list]):
@@ -64,7 +67,7 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
             enforce_detection=False,
             silent=True
         )
-        from deepface.modules import verification
+        print(analyzed)
         # 쓰레스홀드 확장하여 후보를 더 추출
         found = DeepFace.find(img_path=src, db_path=dir_profile,
                               detector_backend=backends[2], model_name=models[2], distance_metric=metrics[2],
@@ -74,7 +77,10 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
         race = analyzed[0]['dominant_race']
         gender = analyzed[0]['dominant_gender']
         is_black_hair = None
-        has_hat = detect_hat(src)
+        if weight_hat == 1.0:
+            has_hat = None
+        else:
+            has_hat = detect_hat(src)
 
         print(f"race : {race}")
         print(f"gender : {gender}")
@@ -132,14 +138,16 @@ def identify_char(dir_profile: str, dir_probe: str, path_label: str, path_profil
         file.write(f"Weight For Gender: {weight_gender}\n")
         file.write(f"Weight For Hat: {weight_hat}\n")
         file.write(f"Confusion_Matrix:\n{confusion_matrix}\n")
+        file.write(f"F1 Score: {get_multiple_class_f1_score(confusion_matrix)}\n")
+        file.write(f"Accuracy: {score / len_matrix}\n")
         file.write("--------\n")  # 구분선 추가
 
 
 if __name__ == "__main__":
-    dir_movie = f"..\\..\\lab\\MyFace Dataset Lite\\django_unchained"
-    weights_race = [0.3]
-    weights_gender = [0.3]
-    weights_hat = [0.3]
+    dir_movie = f"..\\..\\lab\\MyFace Dataset Lite\\the_greatest_showman"
+    weights_race = [0.8]
+    weights_gender = [0.8]
+    weights_hat = [0.65]
 
     for h in weights_hat:
         for r in weights_race:
