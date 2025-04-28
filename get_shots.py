@@ -54,6 +54,6 @@ def get_facial_shots(path_input, path_output, alpha=0.2, step=1):
 
 if __name__ == "__main__":
     get_facial_shots(
-        path_input='./data/The.Greatest.Showman.2017.1080p.BluRay.x264-[YTS.AM].mp4',
-        path_output='./the_greatest_showman/indexed_shot',
+        path_input='./data/Top.Gun.Maverick.2022.1080p.BluRay.x264.AAC5.1-[YTS.MX].mp4',
+        path_output='./top_gun_maverick/indexed_shot',
         step=24, alpha=0.2)
