@@ -14,9 +14,9 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 # -------------------------
 IMG_HEIGHT, IMG_WIDTH = 224, 224
 BATCH_SIZE = 32
-EPOCHS = 10
-ATTRIBUTE = 'No_Beard'  # 예측할 속성 이름
-TOTAL_SAMPLES = 2000  # 사용할 전체 표본 수 지정
+EPOCHS = 30
+ATTRIBUTE = 'Gray_Hair'  # 예측할 속성 이름
+TOTAL_SAMPLES = 5000  # 사용할 전체 표본 수 지정
 
 # 데이터 경로
 main_folder = '../archive'
@@ -150,7 +150,7 @@ model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy']
 # -------------------------
 early_stop = EarlyStopping(
     monitor='val_loss',
-    patience=2,  # 2번 연속 향상 없으면 멈추기
+    patience=3,
     restore_best_weights=True,
     verbose=1
 )
@@ -172,4 +172,4 @@ print(f"Test Accuracy: {accuracy:.4f}")
 # -------------------------
 # 모델 저장 (선택)
 # -------------------------
-model.save('No_Beard.keras')
+model.save(ATTRIBUTE + '.keras')

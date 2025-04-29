@@ -4,67 +4,77 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing import image
 import os
 from glob import glob
+import pandas as pd
 
 # -------------------------
-# 모델 불러오기
+# 설정
 # -------------------------
-MODEL_PATH = './No_Beard.keras'  # 저장된 .keras 파일 경로
-IMG_HEIGHT, IMG_WIDTH = 224, 224
-
-# 모델 로드
-model = tf.keras.models.load_model(MODEL_PATH)
-print("✅ 모델이 정상적으로 로드되었습니다.")
-
+MODEL_FOLDER = './model'  # .keras 파일들이 들어있는 폴더
+IMAGE_FOLDER = './test'  # 예측할 .png 이미지들이 들어있는 폴더
+IMG_SIZE = (224, 224)
 
 # -------------------------
-# 폴더 내 이미지들 예측 함수
+# 모든 모델 파일 불러오기
 # -------------------------
-def predict_folder(folder_path):
-    if not os.path.exists(folder_path):
-        print("❌ 입력한 폴더 경로가 존재하지 않습니다.")
-        return None
+model_paths = glob(os.path.join(MODEL_FOLDER, '*.keras'))
+model_paths.sort()
 
-    # 폴더 내 모든 이미지 경로 수집
-    image_paths = glob(os.path.join(folder_path, '*'))
-    image_paths = [p for p in image_paths if p.lower().endswith(('.png', '.jpg', '.jpeg'))]
+if not model_paths:
+    raise FileNotFoundError(f"❌ 모델 폴더({MODEL_FOLDER})에 .keras 파일이 없습니다.")
 
-    if len(image_paths) == 0:
-        print("❌ 폴더 안에 예측할 이미지가 없습니다.")
-        return None
-
-    print(f"🔍 {len(image_paths)}장의 이미지를 찾았습니다. 예측을 시작합니다...\n")
-
-    results = {}
-
-    for img_path in image_paths:
-        # 이미지 로드 및 전처리
-        img = image.load_img(img_path, target_size=(IMG_HEIGHT, IMG_WIDTH))
-        img_array = image.img_to_array(img)
-        img_array = preprocess_input(img_array)
-        img_array = np.expand_dims(img_array, axis=0)
-
-        # 예측
-        prediction = model.predict(img_array)
-        predicted_class = int(prediction[0][0] > 0.5)
-
-        # 결과 저장
-        results[os.path.basename(img_path)] = {
-            'score': float(prediction[0][0]),
-            'predicted_class': predicted_class
-        }
-
-        print(
-            f"🖼 {os.path.basename(img_path)} → 점수: {prediction[0][0]:.4f}, 예측: {'Positive (1)' if predicted_class else 'Negative (0)'}")
-
-    print("\n✅ 모든 이미지 예측 완료!")
-    return results
-
+# 속성 이름은 파일명에서 추출 (예: "Smiling.keras" → "Smiling")
+attribute_names = [os.path.splitext(os.path.basename(p))[0] for p in model_paths]
 
 # -------------------------
-# 사용 예시
+# 모든 이미지 파일 불러오기
 # -------------------------
-# 예측하고 싶은 폴더 경로
-test_folder_path = './test'
+image_paths = glob(os.path.join(IMAGE_FOLDER, '*'))
+image_paths = [p for p in image_paths if p.lower().endswith(('.png', '.jpg', '.jpeg'))]
 
-# 폴더 예측 실행
-predict_folder(test_folder_path)
+image_paths.sort()
+
+if not image_paths:
+    raise FileNotFoundError(f"❌ 이미지 폴더({IMAGE_FOLDER})에 .png 파일이 없습니다.")
+
+# -------------------------
+# 예측 수행
+# -------------------------
+results = []
+
+for img_path in image_paths:
+    img_name = os.path.basename(img_path)
+    print(img_name)
+
+    # 이미지 로드 및 전처리
+    img = image.load_img(img_path, target_size=IMG_SIZE)
+    img_array = image.img_to_array(img)
+    img_array = preprocess_input(img_array)
+    img_array = np.expand_dims(img_array, axis=0)
+
+    # 하나의 이미지에 대해 모든 모델을 순차적으로 적용
+    row_result = {'image': img_name}
+
+    for model_path, attr in zip(model_paths, attribute_names):
+        model = tf.keras.models.load_model(model_path)
+
+        prediction = model.predict(img_array, verbose=0)
+        score = float(prediction[0][0])
+        predicted_class = int(score > 0.5)
+
+        # row_result[f'{attr}_score'] = score
+        row_result[f'{attr}'] = predicted_class
+        print(f'{attr} - {predicted_class}')
+
+    results.append(row_result)
+    print()
+
+# -------------------------
+# 결과 저장 및 출력
+# -------------------------
+df_results = pd.DataFrame(results)
+print("\n✅ 예측 결과:")
+print(df_results)
+
+# 저장할 경우:
+df_results.to_csv('prediction_results.csv', index=False)
+print("\n📁 'prediction_results.csv' 파일로 결과 저장 완료!")
