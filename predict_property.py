@@ -1,16 +1,24 @@
-import tensorflow as tf
+import os
+import re
+from glob import glob
+
 import numpy as np
+import pandas as pd
+import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing import image
-import os
-from glob import glob
-import pandas as pd
+
+
+def natural_key(filename):
+    # 숫자와 문자를 나눠서 정렬 키 생성: '10.png' → ['10', '.png']
+    return [int(s) if s.isdigit() else s.lower() for s in re.split(r'(\d+)', filename)]
+
 
 # -------------------------
 # 설정
 # -------------------------
-MODEL_FOLDER = './model'  # .keras 파일들이 들어있는 폴더
-IMAGE_FOLDER = './test'  # 예측할 .png 이미지들이 들어있는 폴더
+MODEL_FOLDER = 'model'  # .keras 파일들이 들어있는 폴더
+IMAGE_FOLDER = 'test'  # 예측할 .png 이미지들이 들어있는 폴더
 IMG_SIZE = (224, 224)
 
 # -------------------------
@@ -30,8 +38,7 @@ attribute_names = [os.path.splitext(os.path.basename(p))[0] for p in model_paths
 # -------------------------
 image_paths = glob(os.path.join(IMAGE_FOLDER, '*'))
 image_paths = [p for p in image_paths if p.lower().endswith(('.png', '.jpg', '.jpeg'))]
-
-image_paths.sort()
+image_paths = sorted(image_paths, key=lambda x: natural_key(os.path.basename(x)))
 
 if not image_paths:
     raise FileNotFoundError(f"❌ 이미지 폴더({IMAGE_FOLDER})에 .png 파일이 없습니다.")
@@ -52,7 +59,7 @@ for img_path in image_paths:
     img_array = np.expand_dims(img_array, axis=0)
 
     # 하나의 이미지에 대해 모든 모델을 순차적으로 적용
-    row_result = {'image': img_name}
+    row_result = {'frame': img_name}
 
     for model_path, attr in zip(model_paths, attribute_names):
         model = tf.keras.models.load_model(model_path)
@@ -61,9 +68,10 @@ for img_path in image_paths:
         score = float(prediction[0][0])
         predicted_class = int(score > 0.5)
 
-        # row_result[f'{attr}_score'] = score
-        row_result[f'{attr}'] = predicted_class
-        print(f'{attr} - {predicted_class}')
+        row_result[f'{attr}'] = round(score, 2)
+        print(f'{attr} - {round(score, 2)}')
+        # row_result[f'{attr}'] = predicted_class
+        # print(f'{attr} - {predicted_class}')
 
     results.append(row_result)
     print()

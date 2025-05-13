@@ -15,8 +15,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 IMG_HEIGHT, IMG_WIDTH = 224, 224
 BATCH_SIZE = 32
 EPOCHS = 30
-ATTRIBUTE = 'Gray_Hair'  # 예측할 속성 이름
-TOTAL_SAMPLES = 5000  # 사용할 전체 표본 수 지정
+ATTRIBUTE = 'Young'  # 예측할 속성 이름
+TOTAL_SAMPLES = 40000  # 사용할 전체 표본 수 지정
 
 # 데이터 경로
 main_folder = '../archive'
